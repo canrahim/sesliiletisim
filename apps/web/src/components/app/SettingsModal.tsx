@@ -3,6 +3,17 @@ import { X, User, Mic, Volume2, Image as ImageIcon, Save, Mail, AtSign, Keyboard
 import { useAuthStore } from '../../store/auth.store';
 import { axiosInstance } from '../../api/axios';
 
+// Helper function
+const resolveFileUrl = (url: string) => {
+  if (!url) return '#';
+  if (url.startsWith('http')) return url;
+  const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'app.asforces.com' 
+    ? 'https://asforces.com' 
+    : 'http://localhost:3000';
+  const normalizedUrl = url.replace('/api/uploads/', '/api/upload/uploads/');
+  return `${API_BASE}${normalizedUrl.startsWith('/') ? normalizedUrl : `/${normalizedUrl}`}`;
+};
+
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -181,9 +192,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                   <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-4xl shadow-2xl ring-4 ring-blue-200 overflow-hidden">
                     {user?.avatar ? (
                       <img 
-                        src={user.avatar.startsWith('http') ? user.avatar : `${typeof window !== 'undefined' && window.location.hostname === 'app.asforces.com' ? 'https://asforces.com' : 'http://localhost:3000'}${user.avatar}`}
+                        src={resolveFileUrl(user.avatar)}
                         alt={user.username}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('❌ Avatar yükleme hatası:', user.avatar);
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : (
                       user?.username?.charAt(0).toUpperCase()
