@@ -168,55 +168,53 @@ export const VoiceControlPanel: React.FC<VoiceControlPanelProps> = ({
                 {showQualityMenu && (
                   <>
                     <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowQualityMenu(false); }}></div>
-                    <div className="absolute bottom-full mb-2 right-0 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-80 z-[100]" onClick={(e) => e.stopPropagation()}>
-                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 rounded-t-xl">
-                        <h3 className="text-white font-bold text-sm">Ekran Paylaşımı Ayarları</h3>
+                    <div className="absolute bottom-full left-0 mb-2 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-56 z-[100]" onClick={(e) => e.stopPropagation()}>
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2 rounded-t-xl">
+                        <h3 className="text-white font-semibold text-xs">Ekran Paylaşımı</h3>
                       </div>
-                      <div className="p-4 space-y-3">
-                        <label className="flex items-center gap-2 cursor-pointer p-3 bg-neutral-800 rounded-lg">
+                      <div className="p-3 space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer p-2 bg-neutral-800 rounded-lg hover:bg-neutral-750 transition-all">
                           <input
                             type="checkbox"
                             checked={shareSystemAudio}
                             onChange={(e) => setShareSystemAudio(e.target.checked)}
-                            className="w-4 h-4 rounded accent-blue-500"
+                            className="w-3 h-3 rounded accent-blue-500"
                           />
-                          <span className="text-lg">🔊</span>
+                          <span>🔊</span>
                           <div className="flex-1">
-                            <p className="text-white font-semibold text-sm">Sistem Sesi</p>
-                            <p className="text-xs text-neutral-400">48kHz Stereo</p>
+                            <p className="text-white font-medium text-xs">Sistem Sesi</p>
                           </div>
                         </label>
                         <div>
-                          <p className="text-white font-semibold mb-2 text-sm">Kalite</p>
-                          <div className="space-y-1.5">
+                          <p className="text-white font-medium mb-1.5 text-xs">Kalite</p>
+                          <div className="space-y-1">
                             {[
-                              { value: '720p30', label: '720p 30fps' },
-                              { value: '720p60', label: '720p 60fps' },
-                              { value: '1080p30', label: '1080p 30fps' },
-                              { value: '1080p60', label: '1080p 60fps' },
-                              { value: '1440p30', label: '1440p 30fps' },
-                              { value: '1440p60', label: '1440p 60fps' },
-                              { value: '4k30', label: '4K 30fps' },
+                              { value: '720p30', label: '720p', sub: '30fps' },
+                              { value: '1080p30', label: '1080p', sub: '30fps' },
+                              { value: '1080p60', label: '1080p', sub: '60fps' },
+                              { value: '1440p60', label: '1440p', sub: '60fps' },
+                              { value: '4k30', label: '4K', sub: '30fps' },
                             ].map((opt) => (
                               <button
                                 key={opt.value}
                                 onClick={() => setScreenQuality(opt.value as any)}
-                                className={`w-full px-3 py-2 rounded-lg text-left ${
+                                className={`w-full px-2 py-1.5 rounded-md text-left flex items-center justify-between transition-all ${
                                   screenQuality === opt.value ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-750'
                                 }`}
                               >
-                                <p className="font-semibold text-sm">{opt.label}</p>
+                                <span className="font-medium text-xs">{opt.label}</span>
+                                <span className="text-[10px] opacity-70">{opt.sub}</span>
                               </button>
                             ))}
                           </div>
                         </div>
                       </div>
-                      <div className="px-4 py-3 bg-neutral-800 rounded-b-xl">
+                      <div className="px-3 py-2 bg-neutral-800 rounded-b-xl border-t border-neutral-700">
                         <button
                           onClick={() => setShowQualityMenu(false)}
-                          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm"
+                          className="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-xs"
                         >
-                          Kaydet
+                          Tamam
                         </button>
                       </div>
                     </div>

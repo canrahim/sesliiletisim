@@ -2965,59 +2965,53 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
                           {showQualityMenu && (
                             <>
                               <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); setShowQualityMenu(false); }}></div>
-                              <div className="absolute bottom-full mb-2 right-0 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-80 z-[100]" onClick={(e) => e.stopPropagation()}>
-                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 rounded-t-xl">
-                                  <h3 className="text-white font-bold text-sm">Ekran Paylaşımı Ayarları</h3>
+                              <div className="absolute bottom-full left-0 mb-2 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-56 z-[100]" onClick={(e) => e.stopPropagation()}>
+                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2 rounded-t-xl">
+                                  <h3 className="text-white font-semibold text-xs">Ekran Paylaşımı</h3>
                                 </div>
-                                <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                                  <label className="flex items-center gap-2 cursor-pointer p-3 bg-neutral-800 hover:bg-neutral-750 rounded-lg transition-all">
+                                <div className="p-3 space-y-2">
+                                  <label className="flex items-center gap-2 cursor-pointer p-2 bg-neutral-800 hover:bg-neutral-750 rounded-lg transition-all">
                                     <input
                                       type="checkbox"
                                       checked={shareSystemAudio}
                                       onChange={(e) => setShareSystemAudio(e.target.checked)}
-                                      className="w-4 h-4 rounded accent-blue-500"
+                                      className="w-3 h-3 rounded accent-blue-500"
                                     />
-                                    <span className="text-lg">🔊</span>
+                                    <span>🔊</span>
                                     <div className="flex-1">
-                                      <p className="text-white font-semibold text-sm">Sistem Sesi</p>
-                                      <p className="text-xs text-neutral-400">48kHz Stereo</p>
+                                      <p className="text-white font-medium text-xs">Sistem Sesi</p>
                                     </div>
                                   </label>
                                   <div>
-                                    <p className="text-white font-semibold mb-2 text-sm">Görüntü Kalitesi</p>
-                                    <div className="space-y-1.5">
+                                    <p className="text-white font-medium mb-1.5 text-xs">Kalite</p>
+                                    <div className="space-y-1">
                                       {[
-                                        { value: '720p30', label: '720p', res: '30 fps' },
-                                        { value: '720p60', label: '720p', res: '60 fps' },
-                                        { value: '1080p30', label: '1080p', res: '30 fps' },
-                                        { value: '1080p60', label: '1080p', res: '60 fps' },
-                                        { value: '1440p30', label: '1440p', res: '30 fps' },
-                                        { value: '1440p60', label: '1440p', res: '60 fps' },
-                                        { value: '4k30', label: '4K', res: '30 fps' },
+                                        { value: '720p30', label: '720p', sub: '30fps' },
+                                        { value: '1080p30', label: '1080p', sub: '30fps' },
+                                        { value: '1080p60', label: '1080p', sub: '60fps' },
+                                        { value: '1440p60', label: '1440p', sub: '60fps' },
+                                        { value: '4k30', label: '4K', sub: '30fps' },
                                       ].map((option) => (
                                         <button
                                           key={option.value}
                                           onClick={() => setScreenQuality(option.value as any)}
-                                          className={`w-full px-3 py-2 rounded-lg transition-all text-left flex items-center justify-between ${
+                                          className={`w-full px-2 py-1.5 rounded-md text-left flex items-center justify-between transition-all ${
                                             screenQuality === option.value ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-750'
                                           }`}
                                         >
-                                          <div>
-                                            <p className="font-semibold text-sm">{option.label}</p>
-                                            <p className="text-xs opacity-70">{option.res}</p>
-                                          </div>
-                                          {screenQuality === option.value && <span>✓</span>}
+                                          <span className="font-medium text-xs">{option.label}</span>
+                                          <span className="text-[10px] opacity-70">{option.sub}</span>
                                         </button>
                                       ))}
                                     </div>
                                   </div>
                                 </div>
-                                <div className="px-4 py-3 bg-neutral-800 rounded-b-xl border-t border-neutral-700">
+                                <div className="px-3 py-2 bg-neutral-800 rounded-b-xl border-t border-neutral-700">
                                   <button
                                     onClick={() => setShowQualityMenu(false)}
-                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm"
+                                    className="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-xs"
                                   >
-                                    Kaydet
+                                    Tamam
                                   </button>
                                 </div>
                               </div>
@@ -4056,80 +4050,60 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
                     <Settings className="w-4 h-4 text-neutral-400" />
                   </button>
                   
-                  {/* Ayarlar Dropdown (İnce ve Yukarı) */}
+                  {/* Ayarlar Dropdown (İnce Kompakt) */}
                   {showQualityMenu && (
                     <>
                       <div className="fixed inset-0 z-[90]" onClick={() => setShowQualityMenu(false)}></div>
-                      <div className="absolute bottom-full mb-2 left-0 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-80 z-[100]" onClick={(e) => e.stopPropagation()}>
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 rounded-t-xl">
-                          <h3 className="text-white font-bold text-sm">Ekran Paylaşımı Ayarları</h3>
+                      <div className="absolute bottom-full mb-2 left-0 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-600 w-56 z-[100]" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2 rounded-t-xl">
+                          <h3 className="text-white font-semibold text-xs">Ekran Paylaşımı</h3>
                         </div>
                         
-                        {/* Content */}
-                        <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                          {/* Sistem Sesi */}
-                          <label className="flex items-center gap-2 cursor-pointer p-3 bg-neutral-800 hover:bg-neutral-750 rounded-lg transition-all">
+                        <div className="p-3 space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer p-2 bg-neutral-800 hover:bg-neutral-750 rounded-lg transition-all">
                             <input
                               type="checkbox"
                               checked={shareSystemAudio}
                               onChange={(e) => setShareSystemAudio(e.target.checked)}
-                              className="w-4 h-4 rounded accent-blue-500"
+                              className="w-3 h-3 rounded accent-blue-500"
                             />
-                            <span className="text-lg">🔊</span>
+                            <span>🔊</span>
                             <div className="flex-1">
-                              <p className="text-white font-semibold text-sm">Sistem Sesi</p>
-                              <p className="text-xs text-neutral-400">48kHz Stereo</p>
+                              <p className="text-white font-medium text-xs">Sistem Sesi</p>
                             </div>
                           </label>
                           
-                          {/* Kalite Seçimi (Compact) */}
                           <div>
-                            <p className="text-white font-semibold mb-2 text-sm">Görüntü Kalitesi</p>
-                            <div className="space-y-1.5">
+                            <p className="text-white font-medium mb-1.5 text-xs">Kalite</p>
+                            <div className="space-y-1">
                               {[
-                                { value: '720p30', label: '720p', icon: '📶', res: '30 fps' },
-                                { value: '720p60', label: '720p', icon: '📶📶', res: '60 fps' },
-                                { value: '1080p30', label: '1080p', icon: '📶📶📶', res: '30 fps' },
-                                { value: '1080p60', label: '1080p', icon: '📶📶📶📶', res: '60 fps' },
-                                { value: '1440p30', label: '1440p', icon: '📶📶📶📶', res: '30 fps' },
-                                { value: '1440p60', label: '1440p', icon: '📶📶📶📶📶', res: '60 fps' },
-                                { value: '4k30', label: '4K', icon: '📶📶📶📶📶📶', res: '30 fps' },
+                                { value: '720p30', label: '720p', sub: '30fps' },
+                                { value: '1080p30', label: '1080p', sub: '30fps' },
+                                { value: '1080p60', label: '1080p', sub: '60fps' },
+                                { value: '1440p60', label: '1440p', sub: '60fps' },
+                                { value: '4k30', label: '4K', sub: '30fps' },
                               ].map((option) => (
                                 <button
                                   key={option.value}
                                   onClick={() => setScreenQuality(option.value as any)}
-                                  className={`w-full px-3 py-2.5 rounded-lg transition-all text-left flex items-center justify-between ${
-                                    screenQuality === option.value 
-                                      ? 'bg-blue-600 text-white' 
-                                      : 'bg-neutral-800 text-white hover:bg-neutral-750'
+                                  className={`w-full px-2 py-1.5 rounded-md text-left flex items-center justify-between transition-all ${
+                                    screenQuality === option.value ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-750'
                                   }`}
                                 >
-                                  <div className="flex items-center gap-2">
-                                    <span>{option.icon}</span>
-                                    <div>
-                                      <p className="font-semibold text-sm">{option.label}</p>
-                                      <p className="text-xs opacity-70">{option.res}</p>
-                                    </div>
-                                  </div>
-                                  {screenQuality === option.value && <span className="text-lg">✓</span>}
+                                  <span className="font-medium text-xs">{option.label}</span>
+                                  <span className="text-[10px] opacity-70">{option.sub}</span>
                                 </button>
                               ))}
                             </div>
                           </div>
                         </div>
                         
-                        {/* Footer (Compact) */}
-                        <div className="px-4 py-3 bg-neutral-800 rounded-b-xl flex items-center justify-between border-t border-neutral-700">
-                          <p className="text-xs text-neutral-400">
-                            {screenQuality.replace('p', 'p ')}
-                            {shareSystemAudio && ' + Ses'}
-                          </p>
+                        <div className="px-3 py-2 bg-neutral-800 rounded-b-xl border-t border-neutral-700">
                           <button
                             onClick={() => setShowQualityMenu(false)}
-                            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-all"
+                            className="w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-xs"
                           >
-                            Kaydet
+                            Tamam
                           </button>
                         </div>
                       </div>
