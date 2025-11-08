@@ -1,0 +1,67 @@
+{
+  "name": "asforcesvoice",
+  "version": "0.0.1",
+  "private": true,
+  "description": "AsforceS Voice v2 - Enterprise Voice Communication Platform",
+  "author": "Can Rahim <canrahim@asforces.com>",
+  "license": "PROPRIETARY",
+  "homepage": "https://www.asforces.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/canrahim/asforcesvoice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/canrahim/asforcesvoice/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.5",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:portal": "turbo run dev --filter=@asforces/portal",
+    "dev:web": "turbo run dev --filter=@asforces/web",
+    "dev:api": "turbo run dev --filter=@asforces/api",
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter='./packages/*'",
+    "build:apps": "turbo run build --filter='./apps/*'",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "pnpm --filter './tests/*' test",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "clean:cache": "rm -rf .turbo && pnpm store prune",
+    "prepare": "husky install",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.6.0",
+    "@commitlint/config-conventional": "^18.6.0",
+    "@types/node": "^20.11.19",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
+}

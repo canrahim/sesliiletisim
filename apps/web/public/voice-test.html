@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Ses Test Aracı</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #333;
+        }
+        h1 { color: #667eea; text-align: center; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover { background: #764ba2; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .log {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .log-entry { margin: 5px 0; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .meter {
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status-ok { background: #d1fae5; color: #065f46; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 WebRTC Ses Test Aracı</h1>
+        
+        <div class="section">
+            <h2>1️⃣ Mikrofon Testi</h2>
+            <button id="testMic">Mikrofonu Test Et</button>
+            <button id="stopMic" disabled>Testi Durdur</button>
+            <p>Ses Seviyesi:</p>
+            <div class="meter">
+                <div class="meter-fill" id="micLevel"></div>
+            </div>
+            <p id="micStatus"></p>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ Hoparlör Testi</h2>
+            <button id="testSpeaker">Test Sesi Çal (Bip)</button>
+            <p id="speakerStatus"></p>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ WebRTC Bağlantı Testi</h2>
+            <button id="testWebRTC">WebRTC Simülasyonu</button>
+            <p id="webrtcStatus"></p>
+        </div>
+
+        <div class="section">
+            <h2>4️⃣ Mobil Uyumluluk Testi</h2>
+            <p>Cihaz: <span id="deviceType"></span></p>
+            <p>Tarayıcı: <span id="browserType"></span></p>
+            <p>Autoplay Desteği: <span id="autoplaySupport"></span></p>
+        </div>
+
+        <div class="log" id="log">
+            <div class="log-entry info">📋 Test konsolu hazır...</div>
+        </div>
+    </div>
+
+    <script>
+        const log = (message, type = 'info') => {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // Cihaz bilgileri
+        document.getElementById('deviceType').textContent = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? '📱 Mobil' : '💻 Masaüstü';
+        document.getElementById('browserType').textContent = navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+            navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+            navigator.userAgent.includes('Safari') ? 'Safari' : 'Diğer';
+
+        // Autoplay testi
+        const testAutoplay = async () => {
+            const audio = new Audio();
+            audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+            try {
+                await audio.play();
+                document.getElementById('autoplaySupport').innerHTML = '<span class="status status-ok">✅ Destekleniyor</span>';
+                log('✅ Autoplay destekleniyor', 'success');
+            } catch (e) {
+                document.getElementById('autoplaySupport').innerHTML = '<span class="status status-error">❌ Engelleniyor</span>';
+                log('⚠️ Autoplay engelleniyor - Kullanıcı etkileşimi gerekli', 'warning');
+            }
+        };
+        testAutoplay();
+
+        // Mikrofon testi
+        let micStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationId = null;
+
+        document.getElementById('testMic').onclick = async () => {
+            try {
+                log('🎤 Mikrofon izni isteniyor...', 'info');
+                micStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                log('✅ Mikrofon erişimi başarılı', 'success');
+                document.getElementById('micStatus').innerHTML = '<span class="status status-ok">✅ Mikrofon aktif</span>';
+                document.getElementById('testMic').disabled = true;
+                document.getElementById('stopMic').disabled = false;
+
+                // Ses seviyesi analizi
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(micStream);
+                source.connect(analyser);
+                analyser.fftSize = 256;
+
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                const updateLevel = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    const level = Math.min(100, (average / 255) * 100);
+                    document.getElementById('micLevel').style.width = level + '%';
+                    
+                    if (level > 10) {
+                        log(`🎤 Ses algılandı: ${level.toFixed(0)}%`, 'success');
+                    }
+                    
+                    animationId = requestAnimationFrame(updateLevel);
+                };
+                updateLevel();
+
+            } catch (error) {
+                log(`❌ Mikrofon hatası: ${error.message}`, 'error');
+                document.getElementById('micStatus').innerHTML = '<span class="status status-error">❌ Mikrofon erişilemedi</span>';
+            }
+        };
+
+        document.getElementById('stopMic').onclick = () => {
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+                log('🛑 Mikrofon durduruldu', 'info');
+            }
+            if (animationId) cancelAnimationFrame(animationId);
+            if (audioContext) audioContext.close();
+            document.getElementById('micLevel').style.width = '0%';
+            document.getElementById('micStatus').textContent = '';
+            document.getElementById('testMic').disabled = false;
+            document.getElementById('stopMic').disabled = true;
+        };
+
+        // Hoparlör testi
+        document.getElementById('testSpeaker').onclick = async () => {
+            try {
+                log('🔊 Test sesi çalınıyor...', 'info');
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 440; // La notası
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    log('✅ Test sesi tamamlandı', 'success');
+                    document.getElementById('speakerStatus').innerHTML = '<span class="status status-ok">✅ Hoparlör çalışıyor</span>';
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Hoparlör hatası: ${error.message}`, 'error');
+                document.getElementById('speakerStatus').innerHTML = '<span class="status status-error">❌ Hoparlör test edilemedi</span>';
+            }
+        };
+
+        // WebRTC simülasyonu
+        document.getElementById('testWebRTC').onclick = async () => {
+            try {
+                log('🔄 WebRTC peer connection oluşturuluyor...', 'info');
+                
+                const pc1 = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+                const pc2 = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+
+                log('✅ Peer connections oluşturuldu', 'success');
+
+                // Mikrofon ekle
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => {
+                    pc1.addTrack(track, stream);
+                    log(`➕ Track eklendi: ${track.kind}`, 'success');
+                });
+
+                // Track alındığında
+                pc2.ontrack = (event) => {
+                    log('🎵 Remote track alındı!', 'success');
+                    const audio = new Audio();
+                    audio.srcObject = event.streams[0];
+                    audio.playsInline = true;
+                    audio.play()
+                        .then(() => log('✅ Ses çalmaya başladı!', 'success'))
+                        .catch(e => log(`❌ Ses çalma hatası: ${e.message}`, 'error'));
+                };
+
+                // ICE candidates
+                pc1.onicecandidate = e => e.candidate && pc2.addIceCandidate(e.candidate);
+                pc2.onicecandidate = e => e.candidate && pc1.addIceCandidate(e.candidate);
+
+                // Connection state
+                pc2.onconnectionstatechange = () => {
+                    log(`🔗 Connection state: ${pc2.connectionState}`, 'info');
+                    if (pc2.connectionState === 'connected') {
+                        document.getElementById('webrtcStatus').innerHTML = '<span class="status status-ok">✅ WebRTC bağlantısı başarılı!</span>';
+                    }
+                };
+
+                // Offer/Answer
+                const offer = await pc1.createOffer();
+                await pc1.setLocalDescription(offer);
+                log('📤 Offer oluşturuldu', 'info');
+
+                await pc2.setRemoteDescription(offer);
+                const answer = await pc2.createAnswer();
+                await pc2.setLocalDescription(answer);
+                log('📥 Answer oluşturuldu', 'info');
+
+                await pc1.setRemoteDescription(answer);
+                log('✅ Signaling tamamlandı', 'success');
+
+                // Temizlik
+                setTimeout(() => {
+                    stream.getTracks().forEach(track => track.stop());
+                    pc1.close();
+                    pc2.close();
+                    log('🧹 Test tamamlandı, kaynaklar temizlendi', 'info');
+                }, 5000);
+
+            } catch (error) {
+                log(`❌ WebRTC test hatası: ${error.message}`, 'error');
+                document.getElementById('webrtcStatus').innerHTML = '<span class="status status-error">❌ WebRTC testi başarısız</span>';
+            }
+        };
+
+        log('✅ Test aracı hazır! Testlere başlayabilirsiniz.', 'success');
+    </script>
+</body>
+</html>
+
+
+
+
+

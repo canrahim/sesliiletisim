@@ -1,0 +1,94 @@
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.5
+
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/config/package.json ./packages/config/
+COPY packages/types/package.json ./packages/types/
+COPY packages/constants/package.json ./packages/constants/
+COPY packages/utils/package.json ./packages/utils/
+COPY packages/rtc/package.json ./packages/rtc/
+
+# Install all dependencies (including dev)
+RUN pnpm install --no-frozen-lockfile
+
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.5
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=deps /app/package.json ./
+COPY --from=deps /app/pnpm-workspace.yaml ./
+
+# Copy workspace config
+COPY turbo.json tsconfig.json ./
+
+# Copy packages source
+COPY packages ./packages
+
+# Copy API source
+COPY apps/api ./apps/api
+
+# Generate Prisma Client
+RUN cd apps/api && npx prisma generate
+
+# Build the application
+RUN cd apps/api && pnpm build
+
+# Stage 3: Runner
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Install pnpm
+RUN npm install -g pnpm@8.15.5
+
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/config/package.json ./packages/config/
+COPY packages/types/package.json ./packages/types/
+COPY packages/constants/package.json ./packages/constants/
+COPY packages/utils/package.json ./packages/utils/
+COPY packages/rtc/package.json ./packages/rtc/
+
+# Copy Prisma schema first
+COPY apps/api/prisma ./apps/api/prisma
+
+# Install production dependencies (ignore prepare scripts)  
+RUN pnpm install --no-frozen-lockfile --prod --ignore-scripts
+
+# Generate Prisma Client in production
+RUN cd apps/api && npx prisma generate
+
+# Copy built application from builder
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Copy packages (needed for workspace resolution)
+COPY --from=builder /app/packages ./packages
+
+# Create uploads directory
+RUN mkdir -p /app/uploads
+
+# Don't run as root
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+RUN chown -R nestjs:nodejs /app
+USER nestjs
+
+EXPOSE 3000
+
+# Start application
+CMD ["sh", "-c", "cd apps/api && npx prisma migrate deploy && cd ../.. && node apps/api/dist/main.js"]
+

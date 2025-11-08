@@ -1,0 +1,80 @@
+{
+  "compilerOptions": {
+    // Type Checking
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    
+    // Modules
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    
+    // Emit
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noEmit": true,
+    
+    // Interop Constraints
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    
+    // Language and Environment
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    
+    // Projects
+    "composite": true,
+    "incremental": true,
+    
+    // Output
+    "outDir": "./dist",
+    "rootDir": "./src",
+    
+    // Path Mapping
+    "baseUrl": ".",
+    "paths": {
+      "@asforces/ui": ["packages/ui/src"],
+      "@asforces/ui/*": ["packages/ui/src/*"],
+      "@asforces/types": ["packages/types/src"],
+      "@asforces/types/*": ["packages/types/src/*"],
+      "@asforces/rtc": ["packages/rtc/src"],
+      "@asforces/rtc/*": ["packages/rtc/src/*"],
+      "@asforces/utils": ["packages/utils/src"],
+      "@asforces/utils/*": ["packages/utils/src/*"],
+      "@asforces/constants": ["packages/constants/src"],
+      "@asforces/constants/*": ["packages/constants/src/*"],
+      "@asforces/config": ["packages/config/src"],
+      "@asforces/config/*": ["packages/config/src/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.e2e.ts"
+  ]
+}

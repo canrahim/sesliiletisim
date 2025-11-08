@@ -1,0 +1,528 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER & AUTH
+// ============================================================================
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+  GUEST
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String   // Argon2id hashed
+  
+  // Profile
+  displayName String?
+  avatar      String?
+  bio         String?
+  
+  // Status
+  status         UserStatus @default(ACTIVE)
+  emailVerified  Boolean    @default(false)
+  twoFactorEnabled Boolean  @default(false)
+  isOnline       Boolean    @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLoginAt DateTime?
+  
+  // Relations
+  sessions          Session[]
+  emailVerifications EmailVerification[]
+  passwordResets    PasswordReset[]
+  twoFactorAuth     TwoFactorAuth?
+  devices           Device[]
+  
+  // Server Relations
+  ownedServers    Server[]       @relation("ServerOwner")
+  serverMembers   ServerMember[]
+  
+  // Message Relations
+  messages        Message[]
+  
+  // Friend Relations
+  friends         Friend[] @relation("UserFriends")
+  friendOf        Friend[] @relation("FriendUsers")
+  
+  // Direct Message Relations
+  sentDirectMessages     DirectMessage[] @relation("SentDirectMessages")
+  receivedDirectMessages DirectMessage[] @relation("ReceivedDirectMessages")
+  
+  // File Relations
+  uploadedFiles File[] @relation("UploadedFiles")
+  
+  // Audit Relations
+  auditLogs       AuditLog[]
+
+  @@index([email])
+  @@index([username])
+  @@index([status])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  
+  // Device Info
+  deviceId  String?
+  userAgent String?
+  ipAddress String?
+  
+  // Status
+  isValid   Boolean  @default(true)
+  expiresAt DateTime
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+  
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Device {
+  id          String   @id @default(uuid())
+  userId      String
+  
+  // Device Info
+  name        String?  // e.g., "Chrome on Windows"
+  fingerprint String   @unique
+  userAgent   String
+  ipAddress   String
+  
+  // Status
+  isTrusted   Boolean  @default(false)
+  lastUsedAt  DateTime @default(now())
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@index([userId])
+  @@index([fingerprint])
+  @@map("devices")
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  email     String
+  
+  // Status
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  
+  // Status
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model TwoFactorAuth {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  
+  // TOTP
+  secret    String
+  backupCodes String[] // Encrypted backup codes
+  
+  // Status
+  isEnabled Boolean  @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastUsedAt DateTime?
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor_auth")
+}
+
+// ============================================================================
+// SERVERS & CHANNELS
+// ============================================================================
+
+model Server {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  icon        String?
+  ownerId     String
+  inviteCode  String   @unique
+  
+  // Settings
+  isPublic    Boolean  @default(false)
+  maxMembers  Int      @default(100)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  owner    User           @relation("ServerOwner", fields: [ownerId], references: [id])
+  members  ServerMember[]
+  channels Channel[]
+  invites  ServerInvite[]
+
+  @@index([ownerId])
+  @@index([inviteCode])
+  @@map("servers")
+}
+
+model ServerMember {
+  id       String     @id @default(uuid())
+  serverId String
+  userId   String
+  role     UserRole   @default(MEMBER)
+  nickname String?
+  
+  // Status
+  isMuted  Boolean    @default(false)
+  isDeafened Boolean  @default(false)
+  
+  // Timestamps
+  joinedAt DateTime   @default(now())
+  
+  // Relations
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, userId])
+  @@unique([userId, serverId], name: "userId_serverId")
+  @@index([serverId])
+  @@index([userId])
+  @@map("server_members")
+}
+
+model ServerInvite {
+  id        String   @id @default(uuid())
+  serverId  String
+  code      String   @unique
+  
+  // Settings
+  maxUses   Int?     // null = unlimited
+  uses      Int      @default(0)
+  expiresAt DateTime?
+  
+  // Creator
+  createdBy String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relations
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@index([code])
+  @@map("server_invites")
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+  VIDEO
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  serverId    String
+  name        String
+  description String?
+  type        ChannelType @default(VOICE)
+  
+  // Settings
+  position    Int         @default(0)
+  maxUsers    Int?
+  
+  // Timestamps
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  server   Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  messages Message[]
+  files    File[]
+
+  @@index([serverId])
+  @@map("channels")
+}
+
+// ============================================================================
+// FILES & ATTACHMENTS
+// ============================================================================
+
+model File {
+  id            String   @id @default(uuid())
+  filename      String   // Disk üzerindeki hash ismi
+  originalName  String   // Kullanıcının yüklediği asıl isim
+  path          String   // Tam yol (ör: uploads/abc123.jpg)
+  url           String   // Erişim URL'i
+  size          Int      // Byte cinsinden boyut
+  mimetype      String   // image/png, video/mp4 vs.
+  
+  // Metadata
+  uploaderId    String
+  channelId     String?
+  serverId      String?
+  isImage       Boolean  @default(false)
+  isVideo       Boolean  @default(false)
+  thumbnailUrl  String?
+  
+  // Status
+  isDeleted     Boolean  @default(false)
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  deletedAt     DateTime?
+  
+  // Relations
+  uploader      User     @relation("UploadedFiles", fields: [uploaderId], references: [id], onDelete: Cascade)
+  channel       Channel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  
+  // Mesajlar bu dosyayı kullanabilir
+  messages      Message[]
+  directMessages DirectMessage[]
+  
+  @@index([uploaderId])
+  @@index([channelId])
+  @@index([serverId])
+  @@index([createdAt])
+  @@map("files")
+}
+
+// ============================================================================
+// MESSAGES
+// ============================================================================
+
+model Message {
+  id        String   @id @default(uuid())
+  channelId String
+  userId    String
+  content   String
+  
+  // File attachment (opsiyonel)
+  fileId    String?
+  
+  // Attachments (eski sistem için uyumluluk)
+  attachments String[] // URLs to attachments
+  
+  // Status
+  isEdited  Boolean  @default(false)
+  isDeleted Boolean  @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  editedAt  DateTime?
+  deletedAt DateTime?
+  
+  // Relations
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file    File?   @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  @@index([channelId])
+  @@index([userId])
+  @@index([fileId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ============================================================================
+// AUDIT & LOGGING
+// ============================================================================
+
+enum AuditAction {
+  // Auth
+  USER_LOGIN
+  USER_LOGOUT
+  USER_REGISTER
+  USER_EMAIL_VERIFY
+  USER_PASSWORD_RESET
+  USER_2FA_ENABLE
+  USER_2FA_DISABLE
+  
+  // User
+  USER_UPDATE
+  USER_DELETE
+  USER_SUSPEND
+  USER_BAN
+  
+  // Server
+  SERVER_CREATE
+  SERVER_UPDATE
+  SERVER_DELETE
+  SERVER_MEMBER_JOIN
+  SERVER_MEMBER_LEAVE
+  SERVER_MEMBER_KICK
+  SERVER_MEMBER_BAN
+  
+  // Channel
+  CHANNEL_CREATE
+  CHANNEL_UPDATE
+  CHANNEL_DELETE
+  
+  // Message
+  MESSAGE_SEND
+  MESSAGE_EDIT
+  MESSAGE_DELETE
+}
+
+model AuditLog {
+  id       String      @id @default(uuid())
+  userId   String?
+  action   AuditAction
+  
+  // Details
+  metadata Json?       // Additional data
+  ipAddress String?
+  userAgent String?
+  
+  // Timestamps
+  createdAt DateTime   @default(now())
+  
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// FRIENDS & DIRECT MESSAGES
+// ============================================================================
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+model Friend {
+  id        String              @id @default(uuid())
+  userId    String
+  friendId  String
+  status    FriendRequestStatus @default(PENDING)
+  
+  // Who initiated the request
+  requesterId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user   User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendUsers", fields: [friendId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+  @@index([status])
+  @@map("friends")
+}
+
+model DirectMessage {
+  id         String   @id @default(uuid())
+  content    String   @db.Text
+  senderId   String
+  receiverId String
+  
+  // File attachment (opsiyonel)
+  fileId     String?
+  
+  // Status
+  isRead     Boolean  @default(false)
+  isEdited   Boolean  @default(false)
+  isDeleted  Boolean  @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  editedAt  DateTime?
+  deletedAt DateTime?
+  readAt    DateTime?
+  
+  // Relations
+  sender   User  @relation("SentDirectMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User  @relation("ReceivedDirectMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  file     File? @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([fileId])
+  @@index([createdAt])
+  @@map("direct_messages")
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@asforces/utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared utility functions for AsforceS Voice",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules .turbo"
+  },
+  "dependencies": {
+    "@asforces/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@asforces/config": "workspace:*",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  }
+}
