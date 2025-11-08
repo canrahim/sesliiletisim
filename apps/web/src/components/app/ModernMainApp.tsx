@@ -2757,7 +2757,7 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
                                     {/* Avatar - Ses Seviyesine Göre Glow */}
                                     <div className="relative flex-shrink-0">
                                       <div
-                                        className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm transition-all duration-200 ${
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base transition-all duration-200 ${
                                           currentIsSpeaking
                                             ? 'bg-gradient-to-br from-green-500 to-green-600 avatar-speaking'
                                             : 'bg-gradient-to-br from-blue-500 to-blue-600'
@@ -3071,7 +3071,7 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
             {/* User Profile Card */}
             <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-t-2 border-blue-200">
               <div className="flex items-center gap-3 bg-white rounded-2xl p-3 shadow-lg">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md overflow-hidden">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md overflow-hidden">
                   {user?.avatar ? (
                     <img 
                       src={resolveFileUrl(user.avatar)} 
@@ -3555,7 +3555,7 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
                 {serverMembers.map((member) => (
                   <div key={member.userId} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200 group">
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-base shadow-md overflow-hidden">
                         {member.avatar ? (
                           <img src={resolveFileUrl(member.avatar)} alt={member.username} className="w-full h-full object-cover" />
                         ) : (
@@ -3757,7 +3757,7 @@ const [voiceUsers, setVoiceUsers] = useState<Array<{
                     }`}
                   >
                     <div className="relative">
-                                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg ${
+                                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-base shadow-lg ${
                                         currentIsSpeaking ? 'ring-4 ring-green-400 ring-offset-2 scale-110' : ''
                                       }`}>
                                         {vu.username?.charAt(0).toUpperCase() || 'U'}
