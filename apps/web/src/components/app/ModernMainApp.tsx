@@ -15,7 +15,6 @@ import { FriendsView } from './FriendsView';
 import { ToastContainer } from '../ui/Toast';
 import { RemoteMediaPanel } from '../voice/RemoteMediaPanel';
 import { ScreenShareTheater } from '../voice/ScreenShareTheater';
-import { InlineScreenShare } from '../voice/InlineScreenShare';
 import { ScreenShareSettings } from '../voice/ScreenShareSettings';
 import { ServerInviteModal } from './ServerInviteModal';
 import { CreateChannelModal } from './CreateChannelModal';
