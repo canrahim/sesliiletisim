@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
-let mainWindow: any = null;
+let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -9,36 +9,25 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
-    frame: true,
     backgroundColor: '#1e40af',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true,
     },
-    show: false,
   });
 
-  // Load app
+  // app.asforces.com'u yükle
   mainWindow.loadURL('https://app.asforces.com');
-
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-    console.log('✅ AsforceS Voice Desktop started');
-  });
+  
+  // DevTools aç
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  // Open DevTools for debugging
-  mainWindow.webContents.openDevTools();
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  console.log('✅ App ready');
-});
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -52,4 +41,5 @@ app.on('activate', () => {
   }
 });
 
-console.log('🚀 AsforceS Voice Desktop starting...');
+
+

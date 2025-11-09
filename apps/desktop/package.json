@@ -1,89 +1,11 @@
 {
-  "name": "@asforces/desktop",
-  "version": "2.0.0",
-  "description": "AsforceS Voice - Professional Desktop Communication Platform",
-  "main": "dist/main.js",
-  "author": "Can Rahim <canrahim@asforces.com>",
-  "license": "PROPRIETARY",
+  "name": "asforces-voice-desktop",
+  "version": "1.0.0",
+  "main": "main.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:electron\" \"npm run dev:web\"",
-    "dev:electron": "tsc && electron .",
-    "dev:web": "cd ../web && vite",
-    "build": "npm run build:web && npm run build:electron",
-    "build:web": "cd ../web && vite build --outDir ../desktop/dist/renderer",
-    "build:electron": "tsc",
-    "package": "npm run build && electron-builder",
-    "package:win": "npm run build && electron-builder --win",
-    "package:mac": "npm run build && electron-builder --mac",
-    "package:linux": "npm run build && electron-builder --linux",
     "start": "electron ."
   },
-  "build": {
-    "appId": "com.asforces.voice",
-    "productName": "AsforceS Voice",
-    "directories": {
-      "output": "release",
-      "buildResources": "assets"
-    },
-    "files": [
-      "dist/**/*",
-      "assets/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "../web/dist",
-        "to": "renderer",
-        "filter": ["**/*"]
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "assets/icon.ico",
-      "requestedExecutionLevel": "asInvoker"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    },
-    "mac": {
-      "target": ["dmg", "zip"],
-      "icon": "assets/icon.icns",
-      "category": "public.app-category.social-networking",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist"
-    },
-    "linux": {
-      "target": ["AppImage", "deb", "rpm"],
-      "icon": "assets/icon.png",
-      "category": "Network;InstantMessaging;AudioVideo",
-      "desktop": {
-        "Name": "AsforceS Voice",
-        "Comment": "Professional Voice Communication",
-        "Categories": "Network;InstantMessaging;AudioVideo;"
-      }
-    }
-  },
   "dependencies": {
-    "electron-log": "^5.0.1",
-    "electron-store": "^8.1.0",
-    "electron-updater": "^6.1.7",
-    "node-machine-id": "^1.1.12"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "concurrently": "^8.2.2",
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1",
-    "typescript": "^5.3.2"
+    "electron": "^28.3.3"
   }
 }
