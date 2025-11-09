@@ -34,7 +34,7 @@ interface DirectMessagesProps {
 }
 
 const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'app.asforces.com'
-  ? 'https://asforces.com'
+  ? 'https://app.asforces.com'
   : 'http://localhost:3000';
 
 type ParsedMessage =
@@ -505,7 +505,7 @@ export const DirectMessages: React.FC<DirectMessagesProps> = ({
                     >
                       {/* Avatar */}
                       <div className="flex-shrink-0">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shadow-md overflow-hidden ${
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg shadow-md overflow-hidden ${
                           isMe
                             ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
                             : 'bg-gradient-to-br from-neutral-400 to-neutral-600 text-white'
